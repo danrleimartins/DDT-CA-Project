@@ -104,4 +104,60 @@ contract CarRental {
         uint256 timespanMinutes = getRentDuration(walletAddress);
         renters[walletAddress].due = timespanMinutes * 130000000000000000;
     }
+    // Get information about a renter
+    function getRenter(address walletAddress)
+        public
+        view
+        returns (
+            string memory firstName,
+            string memory lastName,
+            bool canRent,
+            bool active
+        )
+    {
+        firstName = renters[walletAddress].firstName;
+        lastName = renters[walletAddress].lastName;
+        canRent = renters[walletAddress].canRent;
+        active = renters[walletAddress].active;
+    }
+
+// Get total time of car rent period
+    function renterTimeSpan(uint256 start, uint256 end)
+        internal
+        pure
+        returns (uint256)
+    {
+        return end - start;
+    }
+
+// Get Contract balance
+    function balanceOf() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    // Get Renter's balance
+    function balanceOfRenter(address walletAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return renters[walletAddress].balance;
+    }
+
+// Make payment out of balance and reset other variables
+    function pay(address walletAddress) public payable {
+        require(
+            renters[walletAddress].due > 0,
+            "You do not have anything due to pay."
+        );
+        require(
+            renters[walletAddress].balance > msg.value,
+            "You do not have enough funds to pay. Please make a deposit."
+        );
+        renters[walletAddress].balance -= msg.value;
+        renters[walletAddress].canRent = true;
+        renters[walletAddress].due = 0;
+        renters[walletAddress].start = 0;
+        renters[walletAddress].end = 0;
+    }
 }
