@@ -160,4 +160,16 @@ contract CarRental {
         renters[walletAddress].start = 0;
         renters[walletAddress].end = 0;
     }
+    // Get the amount a renter is due to pay
+    function getDue(address walletAddress) public view returns (uint256) {
+        return renters[walletAddress].due;
+    }
+
+    //
+    function renterExits(address walletAddress) public view returns (bool) {
+        if (renters[walletAddress].walletAddress != address(0)) {
+            return true;
+        }
+        return false;
+    }
 }
