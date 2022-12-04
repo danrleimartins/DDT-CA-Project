@@ -50,6 +50,23 @@ contract CarRental {
         );
     }
 
+    // Get information about a renter
+    function getRenter(address walletAddress)
+        public
+        view
+        returns (
+            string memory firstName,
+            string memory lastName,
+            bool canRent,
+            bool active
+        )
+    {
+        firstName = renters[walletAddress].firstName;
+        lastName = renters[walletAddress].lastName;
+        canRent = renters[walletAddress].canRent;
+        active = renters[walletAddress].active;
+    }
+
     // Checkout a car
     function rentCar(address walletAddress) public {
         require(
@@ -78,7 +95,20 @@ contract CarRental {
         setDue(walletAddress);
     }
 
-    function getRentDuration(address walletAddress) public view returns (uint256){
+    // Get total time of car rent period
+    function renterTimeSpan(uint256 start, uint256 end)
+        internal
+        pure
+        returns (uint256)
+    {
+        return end - start;
+    }
+
+    function getRentDuration(address walletAddress)
+        public
+        view
+        returns (uint256)
+    {
         require(
             renters[walletAddress].active == false,
             "Car is currently checked out (rented)."
@@ -87,6 +117,20 @@ contract CarRental {
         //uint timespanInMin = timespan / 60;
         //return timespanInMin;
         return 60;
+    }
+
+    // Get Contract balance
+    function balanceOf() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    // Get Renter's balance
+    function balanceOfRenter(address walletAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return renters[walletAddress].balance;
     }
 
     // Check if can rent
@@ -104,47 +148,8 @@ contract CarRental {
         uint256 timespanMinutes = getRentDuration(walletAddress);
         renters[walletAddress].due = timespanMinutes * 130000000000000000;
     }
-    // Get information about a renter
-    function getRenter(address walletAddress)
-        public
-        view
-        returns (
-            string memory firstName,
-            string memory lastName,
-            bool canRent,
-            bool active
-        )
-    {
-        firstName = renters[walletAddress].firstName;
-        lastName = renters[walletAddress].lastName;
-        canRent = renters[walletAddress].canRent;
-        active = renters[walletAddress].active;
-    }
 
-// Get total time of car rent period
-    function renterTimeSpan(uint256 start, uint256 end)
-        internal
-        pure
-        returns (uint256)
-    {
-        return end - start;
-    }
-
-// Get Contract balance
-    function balanceOf() public view returns (uint256) {
-        return address(this).balance;
-    }
-
-    // Get Renter's balance
-    function balanceOfRenter(address walletAddress)
-        public
-        view
-        returns (uint256)
-    {
-        return renters[walletAddress].balance;
-    }
-
-// Make payment out of balance and reset other variables
+    // Make payment out of balance and reset other variables
     function pay(address walletAddress) public payable {
         require(
             renters[walletAddress].due > 0,
@@ -160,12 +165,13 @@ contract CarRental {
         renters[walletAddress].start = 0;
         renters[walletAddress].end = 0;
     }
+
     // Get the amount a renter is due to pay
     function getDue(address walletAddress) public view returns (uint256) {
         return renters[walletAddress].due;
     }
 
-    //
+    // Check if renter paid before exiting
     function renterExits(address walletAddress) public view returns (bool) {
         if (renters[walletAddress].walletAddress != address(0)) {
             return true;
